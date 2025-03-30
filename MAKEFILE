@@ -1,0 +1,9 @@
+.PHONY: docker-compose-up run
+
+docker-compose-up:
+		@echo "DB up on docker-compose..."
+		@docker-compose -f docker-compose.dev.yml up -d
+
+run:
+		@go run cmd/main.go
+

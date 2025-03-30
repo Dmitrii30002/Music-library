@@ -1,0 +1,213 @@
+basePath: /
+definitions:
+  models.Song:
+    properties:
+      group:
+        type: string
+      id:
+        type: integer
+      link:
+        type: string
+      releaseDate:
+        type: string
+      song:
+        type: string
+      text:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API of music library
+  title: Music Library API
+  version: "1.0"
+paths:
+  /songs:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of songs from the database with support for pagination
+        and filtering by group, song title, or release date.
+      parameters:
+      - description: Filter by group name (optional)
+        in: query
+        name: group
+        type: string
+      - description: Filter by song title (optional)
+        in: query
+        name: song
+        type: string
+      - description: Filter by release date (optional)
+        in: query
+        name: releaseDate
+        type: string
+      - default: 1
+        description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page (default 10, max 100)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved list of songs
+          schema:
+            items:
+              $ref: '#/definitions/models.Song'
+            type: array
+        "400":
+          description: Bad request (error parsing page or limit parameters)
+          schema:
+            type: string
+      summary: Get a list of songs with pagination and filtering
+      tags:
+      - Songs
+    post:
+      consumes:
+      - application/json
+      description: Retrieves song information from the database. If the song is not
+        found, it attempts to retrieve information from an external API and adds the
+        song to the database.
+      parameters:
+      - description: Group name
+        in: query
+        name: group
+        required: true
+        type: string
+      - description: Song title
+        in: query
+        name: song
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully found or added song
+          schema:
+            $ref: '#/definitions/models.Song'
+        "400":
+          description: Bad request (missing 'group' or 'song')
+          schema:
+            type: string
+        "404":
+          description: Song not found in the database or external API
+          schema:
+            type: string
+        "406":
+          description: Failed to add new song to the database
+          schema:
+            type: string
+      summary: Add or get song information
+      tags:
+      - Songs
+  /songs/:id:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a song from the database based on its ID.
+      parameters:
+      - description: Song ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: Successfully deleted song
+          schema:
+            type: string
+        "404":
+          description: Song was not found
+          schema:
+            type: string
+      summary: Delete song by ID
+      tags:
+      - Songs
+    put:
+      consumes:
+      - application/json
+      description: Updates existing song information in the database based on its
+        ID.
+      parameters:
+      - description: Song ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated song information
+        in: body
+        name: song
+        required: true
+        schema:
+          $ref: '#/definitions/models.Song'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully updated song
+          schema:
+            $ref: '#/definitions/models.Song'
+        "400":
+          description: Bad request (invalid song data)
+          schema:
+            type: string
+        "404":
+          description: Song with the specified ID not found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error (failed to update song)
+          schema:
+            type: string
+      summary: Update song information by ID
+      tags:
+      - Songs
+  /songs/:id/lyrics:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves song text from the database by ID, splits it into verses,
+        and returns the specified range of verses with pagination.
+      parameters:
+      - description: Song ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - default: 1
+        description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - default: 1
+        description: Number of verses per page (default 1)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved song text
+          schema:
+            type: object
+        "400":
+          description: Bad request (error parsing page or limit parameters)
+          schema:
+            type: string
+        "404":
+          description: Song with the specified ID not found
+          schema:
+            type: string
+      summary: Get song text with pagination by ID
+      tags:
+      - Songs
+swagger: "2.0"
